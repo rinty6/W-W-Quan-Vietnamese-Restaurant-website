@@ -1,0 +1,257 @@
+.reservation-modal-overlay {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  background: rgba(0,0,0,0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reservation-modal-content {
+  position: relative;
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px 28px 24px 28px;
+  min-width: 340px;
+  max-width: 95vw;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  font-family: 'Montserrat', Arial, sans-serif;
+}
+
+.reservation-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #222; /* Black */
+  margin-bottom: 18px;
+  font-family: 'Montserrat', Arial, sans-serif;
+}
+
+.reservation-section-title {
+  color: #222; /* Black */
+  font-weight: 600;
+  margin: 18px 0 8px 0;
+  font-size: 1.1rem;
+  border-left: 4px solid #f7b32b;
+  padding-left: 8px;
+  font-family: 'Montserrat', Arial, sans-serif;
+}
+
+.reservation-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.reservation-field {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 8px;
+}
+
+.reservation-field input,
+.reservation-field textarea,
+.reservation-row input,
+.reservation-row select {
+  padding: 12px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 1rem;
+  margin-top: 4px;
+  font-family: 'Montserrat', Arial, sans-serif !important;
+  color: #222;
+  background: #fafafa;
+  transition: border 0.2s;
+}
+
+.reservation-field input.error,
+.reservation-field textarea.error {
+  border-color: #f76c6c;
+}
+
+.reservation-field textarea {
+  min-height: 60px;
+  resize: vertical;
+}
+
+.reservation-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.reservation-guests,
+.reservation-date,
+.reservation-time {
+  min-width: 120px;
+  max-width: 160px;
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.guest-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px; /* Match input height */
+}
+
+.guest-input button {
+  background: #FFD600;
+  color: #222;
+  border: none;
+  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.guest-input button:disabled {
+  background: #eee;
+  color: #aaa;
+  cursor: not-allowed;
+}
+
+.guest-input span {
+  min-width: 24px;
+  text-align: center;
+  font-size: 1.1rem;
+  color: #222; /* Black for all text */
+  font-family: 'Montserrat', Arial, sans-serif;
+}
+
+.reservation-error {
+  color: #d32f2f;
+  font-size: 0.95rem;
+  margin-top: 2px;
+  font-family: 'Montserrat', Arial, sans-serif;
+}
+
+.reservation-success {
+  color: #215732;
+  background: #e6f9e6;
+  border-radius: 6px;
+  padding: 8px;
+  margin-bottom: 8px;
+  font-size: 1rem;
+  text-align: center;
+  color: #222; /* Black for all text */
+  font-family: 'Montserrat', Arial, sans-serif;
+}
+
+.reservation-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.reservation-close-btn {
+  background: #f7b32b;
+  border: none;
+  color: #222; /* Black */
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 18px;
+  border-radius: 8px;
+  transition: background 0.2s;
+  font-family: 'Montserrat', Arial, sans-serif;
+}
+
+.reservation-close-btn:hover {
+  background: #f7b32b22;
+}
+
+.reservation-submit-btn {
+  background: #FFD600;
+  color: #222;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  padding: 12px 0;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-family: 'Montserrat', Arial, sans-serif;
+  width: 100%;
+  margin-top: 18px;
+}
+
+.reservation-submit-btn:disabled {
+  background: #eee;
+  color: #aaa;
+  cursor: not-allowed;
+}
+
+.reservation-x-btn {
+  position: absolute;
+  top: 48px;
+  right: 18px;
+  background: #FFD600;
+  border: none;
+  font-size: 2rem;
+  color: #222;
+  cursor: pointer;
+  z-index: 2;
+  line-height: 1;
+  padding: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s;
+}
+
+.reservation-x-btn:hover {
+  background: #ffe082;
+  color: #111;
+}
+
+.reservation-guests label,
+.reservation-date label,
+.reservation-time label {
+  margin-bottom: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #222;
+  font-family: 'Montserrat', Arial, sans-serif;
+  display: block;
+  height: 24px;
+  line-height: 24px;
+}
+
+.reservation-control {
+  display: flex;
+  align-items: center;
+  height: 44px; /* Match input height */
+}
+
+.reservation-date input[type="date"],
+.reservation-time input[type="time"] {
+  width: 100%;
+  min-width: 0;
+  height: 44px;
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.reservation-time-hint {
+  display: block;
+  color: #666;
+  font-size: 0.85rem;
+  margin-top: 4px;
+}

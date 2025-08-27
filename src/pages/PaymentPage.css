@@ -1,0 +1,171 @@
+.payment-bg {
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding: 24px;
+}
+
+.payment-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+.payment-header {
+  margin-bottom: 12px; 
+}
+
+.payment-logo-row {
+  margin-bottom: 6px; 
+}
+
+.payment-logo {
+  height: 48px;
+}
+
+.payment-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px; 
+}
+
+.payment-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 4px; 
+}
+
+h1.payment-title {
+  margin-top: 0;
+  margin-bottom: 4px; 
+}
+
+.menu-btn {
+  padding: 8px 16px;
+  background: #FFD600;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.payment-content-row {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+  margin-top: 8px; 
+}
+
+.payment-details-col {
+  flex: 1;
+  min-width: 300px;
+}
+
+.checkout-section-col {
+  flex: 1;
+  min-width: 300px;
+}
+
+.payment-summary {
+  margin-bottom: 8px; 
+}
+
+.payment-summary p {
+  margin: 2px 0; 
+}
+
+.payment-totals {
+  margin-top: 8px; 
+  padding-top: 8px; 
+}
+
+.payment-totals p {
+  margin: 4px 0; 
+}
+
+.surcharge-notice {
+  margin: 0 0 20px 0; 
+  padding: 10px;
+  background: #f8f8f8;
+  border-radius: 8px;
+}
+
+.surcharge-notice-text {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: #555;
+  font-size: 0.95rem;
+  margin: 0;
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+.info-icon {
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.email-input {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+.payment-items {
+  margin-bottom: 8px;
+  padding-left: 20px;
+  font-size: 1.1rem;
+  padding-bottom: 8px;
+  margin-top: 8px; 
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+.payment-bg,
+.payment-container,
+.payment-header,
+.payment-title,
+.payment-summary,
+.payment-items,
+.payment-items * {
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+@media (max-width: 600px) {
+  .payment-container {
+    padding: 16px 4px;
+  }
+ 
+  .payment-title-row {
+    flex-direction: column;
+    gap: 8px; 
+  }
+ 
+  .payment-method-option {
+    padding: 10px;
+  }
+ 
+  .payment-method-option label {
+    font-size: 0.95rem;
+  }
+ 
+  .surcharge-notice-text {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .payment-content-row {
+    flex-direction: column;
+    gap: 20px; 
+  }
+ 
+  .payment-details-col,
+  .checkout-section-col {
+    width: 100%;
+  }
+}
