@@ -39,17 +39,17 @@
 }
 
 .about-title {
-  font-family: 'Montserrat', Arial, sans-serif;
+  font-family: 'Segoe UI', Arial, sans-serif;
   font-size: 2.8rem;
   font-weight: 800;
-  color: #222; /* Use your main page heading color */
+  color: #222; 
   margin-bottom: 24px;
   letter-spacing: 1px;
   line-height: 1.1;
 }
 
 .about-text {
-  font-family: 'Montserrat', Arial, sans-serif;
+  font-family: 'Segoe UI', Arial, sans-serif;
   font-size: 1.18rem;
   color: #222;
   margin-bottom: 32px;
@@ -58,9 +58,9 @@
 
 .about-menu-btn {
   display: inline-block;
-  background: #FFD600; /* Use your main accent color */
-  color: black;      /* Use your main button text color */
-  font-family: 'Montserrat', Arial, sans-serif;
+  background: #FFD600; 
+  color: black;      
+  font-family: 'Segoe UI', Arial, sans-serif;
   font-weight: 700;
   font-size: 1.15rem;
   padding: 14px 38px;

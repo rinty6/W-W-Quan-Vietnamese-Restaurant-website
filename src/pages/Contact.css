@@ -6,7 +6,7 @@
   padding: 2rem;
   max-width: 600px;
   margin: auto;
-  font-family: Arial, sans-serif;
+  font-family: 'Segoe UI', Arial, sans-serif;
 }
 
 .contact-container h2 {
@@ -39,7 +39,7 @@
 
 .contact-form textarea {
   resize: vertical;
-  font-family: Arial, sans-serif;
+  font-family: 'Segoe UI', Arial, sans-serif;
 }
 
 .contact-form label {

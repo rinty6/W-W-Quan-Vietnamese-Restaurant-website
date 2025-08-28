@@ -16,7 +16,7 @@
   min-width: 340px;
   max-width: 95vw;
   box-shadow: 0 8px 32px rgba(0,0,0,0.12);
-  font-family: 'Montserrat', Arial, sans-serif;
+  font-family: 'Segoe UI', Arial, sans-serif;
 }
 
 .reservation-title {
@@ -24,7 +24,7 @@
   font-weight: 700;
   color: #222; /* Black */
   margin-bottom: 18px;
-  font-family: 'Montserrat', Arial, sans-serif;
+  font-family: 'Segoe UI', Arial, sans-serif;
 }
 
 .reservation-section-title {
@@ -34,7 +34,7 @@
   font-size: 1.1rem;
   border-left: 4px solid #f7b32b;
   padding-left: 8px;
-  font-family: 'Montserrat', Arial, sans-serif;
+  font-family: 'Segoe UI', Arial, sans-serif;
 }
 
 .reservation-form {
@@ -58,7 +58,7 @@
   border-radius: 8px;
   font-size: 1rem;
   margin-top: 4px;
-  font-family: 'Montserrat', Arial, sans-serif !important;
+  font-family: 'Segoe UI', Arial, sans-serif;
   color: #222;
   background: #fafafa;
   transition: border 0.2s;
@@ -127,14 +127,14 @@
   text-align: center;
   font-size: 1.1rem;
   color: #222; /* Black for all text */
-  font-family: 'Montserrat', Arial, sans-serif;
+  font-family: 'Segoe UI', Arial, sans-serif;
 }
 
 .reservation-error {
   color: #d32f2f;
   font-size: 0.95rem;
   margin-top: 2px;
-  font-family: 'Montserrat', Arial, sans-serif;
+  font-family: 'Segoe UI', Arial, sans-serif;
 }
 
 .reservation-success {
@@ -146,7 +146,7 @@
   font-size: 1rem;
   text-align: center;
   color: #222; /* Black for all text */
-  font-family: 'Montserrat', Arial, sans-serif;
+  font-family: 'Segoe UI', Arial, sans-serif;
 }
 
 .reservation-actions {
@@ -166,7 +166,7 @@
   padding: 8px 18px;
   border-radius: 8px;
   transition: background 0.2s;
-  font-family: 'Montserrat', Arial, sans-serif;
+  font-family: 'Segoe UI', Arial, sans-serif;
 }
 
 .reservation-close-btn:hover {
@@ -183,7 +183,7 @@
   padding: 12px 0;
   cursor: pointer;
   transition: background 0.2s;
-  font-family: 'Montserrat', Arial, sans-serif;
+  font-family: 'Segoe UI', Arial, sans-serif;
   width: 100%;
   margin-top: 18px;
 }
@@ -227,7 +227,7 @@
   font-size: 1rem;
   font-weight: 500;
   color: #222;
-  font-family: 'Montserrat', Arial, sans-serif;
+  font-family: 'Segoe UI', Arial, sans-serif;
   display: block;
   height: 24px;
   line-height: 24px;
@@ -244,7 +244,7 @@
   width: 100%;
   min-width: 0;
   height: 44px;
-  font-family: 'Montserrat', Arial, sans-serif;
+  font-family: 'Segoe UI', Arial, sans-serif;
   font-size: 1rem;
   box-sizing: border-box;
 }
