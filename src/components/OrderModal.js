@@ -435,6 +435,7 @@ export default function OrderModal({
                     }}
                     className={`cart-date ${checkoutError && !date ? "input-error" : ""}`}
                     required
+                    min={new Date().toISOString().split("T")[0]}
                   />
                 </div>
                 <div className="cart-pickup-datetime">
