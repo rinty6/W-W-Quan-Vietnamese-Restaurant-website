@@ -2,7 +2,7 @@ import { useRef, useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./HomePage.css";
 import heroImg from "../assets/image/bun bowl.png";
-import dealImg from "../assets/image/Banh Mi Deal + Spring roll.png";
+import dealImg from "../assets/image/Banh_Mi_Deal_Spring_roll.png";
 import MakeReservationModal from "../components/MakeReservationModal";
 import OrderModal from "../components/OrderModal";
 

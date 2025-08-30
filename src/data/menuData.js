@@ -316,7 +316,7 @@ const menuDishes = {
       name: "Meal deal Banh Mi",
       price: 16.90,
       desc: "Vietnamese baguette with 2 spring rolls and a can of coke.",
-      image: require("../assets/image/Banh Mi Deal + Spring roll.png"),
+      image: require("../assets/image/Banh_Mi_Deal_Spring_roll.png"),
     }
   ],
   "baos-steamed-buns": [
