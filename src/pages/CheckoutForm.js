@@ -46,7 +46,7 @@ const CheckoutForm = ({ subtotal, surchargeRates, clientSecret }) => {
     setIsUpdatingPaymentIntent(true);
    
     try {
-      const response = await fetch('http://localhost:4242/update-payment-intent-amount', {
+      const response = await fetch('https://w-w-quan-vietnamese-restaurant-website.onrender.com/update-payment-intent-amount', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

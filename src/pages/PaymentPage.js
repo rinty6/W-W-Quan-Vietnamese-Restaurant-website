@@ -58,7 +58,7 @@ const PaymentPage = () => {
   useEffect(() => {
     if (!invoice || !customerEmail) return;
 
-    fetch('http://localhost:4242/create-payment-intent', {
+    fetch('https://w-w-quan-vietnamese-restaurant-website.onrender.com/create-payment-intent', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
