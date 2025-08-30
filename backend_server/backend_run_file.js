@@ -14,7 +14,13 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 app.use('/webhook', webhookRoutes);
 
 // Middlewares
-app.use(cors());
+app.use(cors({
+  origin: [
+    'https://w-w-quan-vietnamese-restaurant-webs.vercel.app',
+    'http://localhost:3000'
+  ],
+  credentials: true
+}));
 app.use(express.json());
 
 // Log all requests (helpful for debugging)
