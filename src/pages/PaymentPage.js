@@ -23,8 +23,6 @@ const PaymentPage = () => {
 
   useEffect(() => {
     if (!invoice) return;
-
-    // Calculate subtotal
     let sub = 0;
     invoice.items.forEach(item => {
       const qty = item.quantity || item.qty || 1;
@@ -32,33 +30,24 @@ const PaymentPage = () => {
       const sidesTotal = (item.sides || []).reduce((s, side) => s + (typeof side.price === "number" ? side.price : 0), 0);
       sub += (dishPrice + sidesTotal) * qty;
     });
-
     setSubtotal(sub);
-
-    // Set initial total display with card surcharge (default)
-    const initialSurcharge = sub * (1.5 / 100); // Default card rate
+    const initialSurcharge = sub * (1.5 / 100);
     const initialTotal = sub + initialSurcharge;
-    
-    // Update initial display
     setTimeout(() => {
       const surchargeDisplay = document.getElementById('surcharge-display');
       if (surchargeDisplay) {
         surchargeDisplay.innerHTML = `<strong>Processing Fee (1.5%):</strong> <span class="surcharge-amount">A$${initialSurcharge.toFixed(2)}</span>`;
       }
-      
       const totalDisplay = document.getElementById('total-display');
       if (totalDisplay) {
         totalDisplay.textContent = `A$${initialTotal.toFixed(2)}`;
       }
     }, 100);
-
   }, [invoice]);
 
-  // Create PaymentIntent after email is entered
   useEffect(() => {
     if (!invoice || !customerEmail) return;
-
-    fetch('https://w-w-quan-vietnamese-restaurant-website.onrender.com/create-payment-intent', {
+    fetch(`${process.env.REACT_APP_BACKEND_URL}/create-payment-intent`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -75,7 +64,17 @@ const PaymentPage = () => {
         items: invoice.items
       })
     })
-      .then(res => res.json())
+      .then(res => {
+        const contentType = res.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          return res.json();
+        } else {
+          return res.text().then(text => {
+            setClientSecret("error");
+            throw new Error(text);
+          });
+        }
+      })
       .then(data => {
         setClientSecret(data.clientSecret);
         if (data.surchargeRates) {
@@ -156,7 +155,6 @@ const PaymentPage = () => {
               <p><strong>Date/Time:</strong> {invoice.datetime}</p>
               <p><strong>Total items:</strong> {invoice.items.length}</p>
               <div className="payment-totals">
-                <p><strong>Subtotal:</strong> A${subtotal.toFixed(2)}</p>
                 <p className="surcharge-line" id="surcharge-display">
                   <strong>Processing Fee:</strong>
                   <span className="surcharge-amount"> Calculated at checkout</span>
@@ -167,14 +165,12 @@ const PaymentPage = () => {
                 </p>
               </div>
             </div>
-
             <ul className="payment-items" style={{ listStyle: "none", padding: 0, fontFamily: "inherit", maxWidth: 420 }}>
               {invoice.items.map((item, idx) => {
                 const qty = item.quantity || item.qty || 1;
                 const dishPrice = typeof item.dishPrice === "number" ? item.dishPrice : 0;
                 const sidesTotal = (item.sides || []).reduce((s, side) => s + (typeof side.price === "number" ? side.price : 0), 0);
                 const totalItemPrice = (dishPrice + sidesTotal) * qty;
-
                 return (
                   <li key={idx} style={{ marginBottom: 4, fontFamily: "inherit" }}>
                     <div style={{ display: "grid", gridTemplateColumns: "auto 1fr auto", alignItems: "center" }}>
@@ -206,9 +202,7 @@ const PaymentPage = () => {
               })}
             </ul>
           </div>
-
           <div className="checkout-section-col" style={{ flex: '1 1 300px' }}>
-            {/* Surcharge Notice */}
             <div className="surcharge-notice">
               <p className="surcharge-notice-text">
                 <svg className="info-icon" width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
@@ -217,7 +211,6 @@ const PaymentPage = () => {
                 A processing fee applies to cover transaction costs: 1.5% for Credit/Debit Card payments and 0.5% for Australian BECS Direct Debit. The fee will be calculated based on your selected payment method below.
               </p>
             </div>
-
             <div>
               <label htmlFor="customerEmail" className='email-input'>Email</label>
               <input
@@ -241,7 +234,6 @@ const PaymentPage = () => {
                 The payment status will be sent to this email address.
               </p>
             </div>
-
             {clientSecret ? (
               <Elements stripe={stripePromise} options={options}>
                 <CheckoutForm

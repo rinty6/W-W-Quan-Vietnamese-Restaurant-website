@@ -12,24 +12,18 @@ const CheckoutForm = ({ subtotal, surchargeRates, clientSecret }) => {
   const [statusType, setStatusType] = useState('');
   const [currentSurcharge, setCurrentSurcharge] = useState(0);
   const [totalWithSurcharge, setTotalWithSurcharge] = useState(subtotal);
-  const [isUpdatingPaymentIntent, setIsUpdatingPaymentIntent] = useState(false);
   const navigate = useNavigate();
 
   // Update display elements - moved outside useEffect and memoized
   const updatePaymentDisplay = useCallback((surcharge, total, rate) => {
-    // Update surcharge display
     const surchargeDisplay = document.getElementById('surcharge-display');
     if (surchargeDisplay) {
       surchargeDisplay.innerHTML = `<strong>Processing Fee (${rate}%):</strong> <span class="surcharge-amount">A${surcharge.toFixed(2)}</span>`;
     }
-   
-    // Update total display
     const totalDisplay = document.getElementById('total-display');
     if (totalDisplay) {
       totalDisplay.textContent = `A${total.toFixed(2)}`;
     }
-   
-    // Update button text
     const checkoutBtn = document.querySelector('.checkout-btn-dynamic');
     if (checkoutBtn && !loading) {
       checkoutBtn.textContent = `Pay A${total.toFixed(2)}`;
@@ -39,64 +33,51 @@ const CheckoutForm = ({ subtotal, surchargeRates, clientSecret }) => {
   // Function to update backend payment intent amount with error handling
   const updatePaymentIntentAmount = useCallback(async (paymentMethod) => {
     if (!clientSecret) return;
-   
-    // Extract payment intent ID from client secret
     const paymentIntentId = clientSecret.split('_secret_')[0];
-   
-    setIsUpdatingPaymentIntent(true);
-   
+    setLoading(true);
+
     try {
-      const response = await fetch('https://w-w-quan-vietnamese-restaurant-website.onrender.com/update-payment-intent-amount', {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/update-payment-intent-amount`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.REACT_APP_API_KEY
+        },
         body: JSON.stringify({
           paymentIntentId,
           paymentMethod
         })
       });
-     
-      if (!response.ok) {
-        const errorData = await response.json();
-        
-        // Check if it's a Stripe error about PaymentIntent status
-        if (errorData.error && errorData.error.includes('status of processing')) {
-          console.warn('PaymentIntent is already processing, cannot update amount. This is expected behavior.');
-          // Don't treat this as an error since payment is proceeding normally
-          return;
-        }
-        
-        console.error('Failed to update payment intent amount:', errorData.error);
-      } else {
-        const data = await response.json();
+
+      // Defensive: Only parse JSON if response is JSON
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        await response.json();
         console.log('Payment intent amount updated for method:', paymentMethod);
+      } else {
+        const text = await response.text();
+        console.error('Non-JSON response:', text);
       }
     } catch (error) {
-      // Check if it's a network error or Stripe processing status error
       if (error.message && error.message.includes('processing')) {
         console.warn('PaymentIntent update failed - payment is processing. This is normal.');
       } else {
         console.error('Error updating payment intent:', error);
       }
     } finally {
-      // Always reset the updating state
-      setIsUpdatingPaymentIntent(false);
+      setLoading(false);
     }
   }, [clientSecret]);
 
-  // Listen for payment method changes
   useEffect(() => {
     if (!elements) return;
-
     const paymentElement = elements.getElement(PaymentElement);
     if (!paymentElement) return;
 
-    // Listen for changes in payment method selection
     const handleChange = (event) => {
       if (event.value && event.value.type) {
-        let surchargeRate = surchargeRates.card || 1.5; // default
+        let surchargeRate = surchargeRates.card || 1.5;
         let paymentMethodType = 'card';
-       
-        // Detect payment method type
         if (event.value.type === 'au_becs_debit') {
           surchargeRate = surchargeRates.au_becs_debit || 0.5;
           paymentMethodType = 'au_becs_debit';
@@ -104,16 +85,10 @@ const CheckoutForm = ({ subtotal, surchargeRates, clientSecret }) => {
           surchargeRate = surchargeRates.card || 1.5;
           paymentMethodType = 'card';
         }
-       
         const surcharge = subtotal * (surchargeRate / 100);
         setCurrentSurcharge(surcharge);
         setTotalWithSurcharge(subtotal + surcharge);
-       
-        // Update display elements
         updatePaymentDisplay(surcharge, subtotal + surcharge, surchargeRate);
-       
-        // Update backend payment intent amount (with better error handling)
-        // Use setTimeout to avoid blocking the UI
         setTimeout(() => {
           updatePaymentIntentAmount(paymentMethodType);
         }, 100);
@@ -127,8 +102,6 @@ const CheckoutForm = ({ subtotal, surchargeRates, clientSecret }) => {
     setCurrentSurcharge(initialSurcharge);
     setTotalWithSurcharge(subtotal + initialSurcharge);
     updatePaymentDisplay(initialSurcharge, subtotal + initialSurcharge, surchargeRates.card || 1.5);
-   
-    // Update backend for initial card payment method (with delay)
     setTimeout(() => {
       updatePaymentIntentAmount('card');
     }, 500);
@@ -144,18 +117,14 @@ const CheckoutForm = ({ subtotal, surchargeRates, clientSecret }) => {
     setError(null);
     setStatusMessage('');
     setStatusType('');
-
-    // Update button text to processing
     const checkoutBtn = document.querySelector('.checkout-btn-dynamic');
     if (checkoutBtn) {
       checkoutBtn.textContent = 'Processing...';
     }
-
     if (!stripe || !elements) {
       setLoading(false);
       return;
     }
-
     try {
       const { error, paymentIntent } = await stripe.confirmPayment({
         elements,
@@ -164,7 +133,7 @@ const CheckoutForm = ({ subtotal, surchargeRates, clientSecret }) => {
           payment_method_data: {
             billing_details: {
               address: {
-                country: 'AU', // Default to Australia
+                country: 'AU',
               }
             }
           }
@@ -180,11 +149,8 @@ const CheckoutForm = ({ subtotal, surchargeRates, clientSecret }) => {
           checkoutBtn.textContent = `Pay A$${totalWithSurcharge.toFixed(2)}`;
         }
       } else if (paymentIntent) {
-        console.log('Payment Intent Status:', paymentIntent.status);
-       
         switch (paymentIntent.status) {
           case 'succeeded':
-            console.log('Payment succeeded, navigating to home');
             localStorage.setItem('paymentStatus', 'success');
             localStorage.setItem('paymentSurcharge', currentSurcharge.toString());
             localStorage.setItem('paymentTotal', totalWithSurcharge.toString());
@@ -198,9 +164,7 @@ const CheckoutForm = ({ subtotal, surchargeRates, clientSecret }) => {
               });
             }, 100);
             break;
-           
           case 'processing':
-            console.log('Payment processing, navigating to home');
             localStorage.setItem('paymentStatus', 'processing');
             localStorage.setItem('paymentSurcharge', currentSurcharge.toString());
             localStorage.setItem('paymentTotal', totalWithSurcharge.toString());
@@ -214,7 +178,6 @@ const CheckoutForm = ({ subtotal, surchargeRates, clientSecret }) => {
               });
             }, 100);
             break;
-           
           case 'requires_action':
             setStatusMessage('Your payment requires additional action.');
             setStatusType('error');
@@ -223,7 +186,6 @@ const CheckoutForm = ({ subtotal, surchargeRates, clientSecret }) => {
               checkoutBtn.textContent = `Pay A$${totalWithSurcharge.toFixed(2)}`;
             }
             break;
-           
           default:
             setStatusMessage('Payment status: ' + paymentIntent.status);
             setStatusType('error');
@@ -273,8 +235,6 @@ const CheckoutForm = ({ subtotal, surchargeRates, clientSecret }) => {
           }}
         />
       </div>
-     
-      {/* Final amount display */}
       <div className="checkout-final-amount">
         <p className="checkout-amount-text">
           Total Amount to Pay: <strong>A${totalWithSurcharge.toFixed(2)}</strong>
@@ -285,7 +245,6 @@ const CheckoutForm = ({ subtotal, surchargeRates, clientSecret }) => {
           )}
         </p>
       </div>
-     
       <button
         type="submit"
         disabled={loading || !stripe || !elements}
@@ -293,7 +252,6 @@ const CheckoutForm = ({ subtotal, surchargeRates, clientSecret }) => {
       >
         {loading ? 'Processing...' : `Pay A${totalWithSurcharge.toFixed(2)}`}
       </button>
-     
       {error && (
         <div className="payment-status-message error">{error}</div>
       )}
