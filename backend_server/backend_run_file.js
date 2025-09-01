@@ -133,38 +133,52 @@ app.post("/create-payment-intent", async (req, res) => {
 
 // Endpoint to update payment intent amount based on selected payment method
 app.post("/api/update-payment-intent-amount", async (req, res) => {
-  try {
-    const { paymentIntentId, paymentMethod } = req.body;
-    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-    const updatableStatuses = ['requires_payment_method', 'requires_confirmation', 'requires_action'];
-    if (!updatableStatuses.includes(paymentIntent.status)) {
+  const MAX_RETRIES = 3;
+  let attempt = 0;
+  let lastError = null;
+  while (attempt < MAX_RETRIES) {
+    try {
+      const { paymentIntentId, paymentMethod } = req.body;
+      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+      const updatableStatuses = ['requires_payment_method', 'requires_confirmation', 'requires_action'];
+      if (!updatableStatuses.includes(paymentIntent.status)) {
+        return res.json({
+          success: true,
+          message: `Payment is ${paymentIntent.status}. Amount update not needed.`,
+          status: paymentIntent.status
+        });
+      }
+      const baseAmountCents = parseInt(paymentIntent.metadata.base_amount_cents);
+      const newTotalAmountCents = calculateTotalWithSurcharge(baseAmountCents, paymentMethod);
+      const updatedPaymentIntent = await stripe.paymentIntents.update(paymentIntentId, {
+        amount: newTotalAmountCents,
+        metadata: {
+          ...paymentIntent.metadata,
+          final_payment_method: paymentMethod,
+          final_amount_cents: newTotalAmountCents.toString(),
+          final_surcharge_cents: calculateSurcharge(baseAmountCents, paymentMethod).toString()
+        }
+      });
       return res.json({
         success: true,
-        message: `Payment is ${paymentIntent.status}. Amount update not needed.`,
-        status: paymentIntent.status
+        amount: newTotalAmountCents,
+        surcharge: calculateSurcharge(baseAmountCents, paymentMethod),
+        status: updatedPaymentIntent.status
       });
-    }
-    const baseAmountCents = parseInt(paymentIntent.metadata.base_amount_cents);
-    const newTotalAmountCents = calculateTotalWithSurcharge(baseAmountCents, paymentMethod);
-    const updatedPaymentIntent = await stripe.paymentIntents.update(paymentIntentId, {
-      amount: newTotalAmountCents,
-      metadata: {
-        ...paymentIntent.metadata,
-        final_payment_method: paymentMethod,
-        final_amount_cents: newTotalAmountCents.toString(),
-        final_surcharge_cents: calculateSurcharge(baseAmountCents, paymentMethod).toString()
+    } catch (err) {
+      lastError = err;
+      if (err.code === 'lock_timeout' || err.statusCode === 429) {
+        attempt++;
+        await new Promise(resolve => setTimeout(resolve, 500)); // Wait 500ms before retry
+        continue;
       }
-    });
-    res.json({
-      success: true,
-      amount: newTotalAmountCents,
-      surcharge: calculateSurcharge(baseAmountCents, paymentMethod),
-      status: updatedPaymentIntent.status
-    });
-  } catch (err) {
-    console.error('Error updating payment intent:', err);
-    res.status(500).json({ error: err.message });
+      console.error('Error updating payment intent:', err);
+      return res.status(500).json({ error: err.message });
+    }
   }
+  // If we reach here, all retries failed
+  console.error('Stripe lock_timeout after retries:', lastError);
+  return res.status(500).json({ error: lastError.message });
 });
 
 // Endpoint to get surcharge rates

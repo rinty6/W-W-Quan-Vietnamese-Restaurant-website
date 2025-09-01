@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useNavigate } from 'react-router-dom';
 import './CheckoutForm.css';
@@ -13,28 +13,51 @@ const CheckoutForm = ({ subtotal, surchargeRates, clientSecret }) => {
   const [currentSurcharge, setCurrentSurcharge] = useState(0);
   const [totalWithSurcharge, setTotalWithSurcharge] = useState(subtotal);
   const navigate = useNavigate();
+  
+  // Add refs to track update state and debounce timer
+  const updateInProgressRef = useRef(false);
+  const updateQueueRef = useRef(null);
+  const debounceTimerRef = useRef(null);
+  const lastPaymentMethodRef = useRef(null);
+  const retryCountRef = useRef(0);
+  const MAX_RETRIES = 3;
 
-  // Update display elements - moved outside useEffect and memoized
+  // Update display elements
   const updatePaymentDisplay = useCallback((surcharge, total, rate) => {
     const surchargeDisplay = document.getElementById('surcharge-display');
     if (surchargeDisplay) {
-      surchargeDisplay.innerHTML = `<strong>Processing Fee (${rate}%):</strong> <span class="surcharge-amount">A${surcharge.toFixed(2)}</span>`;
+      surchargeDisplay.innerHTML = `<strong>Processing Fee (${rate}%):</strong> <span class="surcharge-amount">A$${surcharge.toFixed(2)}</span>`;
     }
     const totalDisplay = document.getElementById('total-display');
     if (totalDisplay) {
-      totalDisplay.textContent = `A${total.toFixed(2)}`;
+      totalDisplay.textContent = `A$${total.toFixed(2)}`;
     }
     const checkoutBtn = document.querySelector('.checkout-btn-dynamic');
     if (checkoutBtn && !loading) {
-      checkoutBtn.textContent = `Pay A${total.toFixed(2)}`;
+      checkoutBtn.textContent = `Pay A$${total.toFixed(2)}`;
     }
   }, [loading]);
 
-  // Function to update backend payment intent amount with error handling
-  const updatePaymentIntentAmount = useCallback(async (paymentMethod) => {
+  // Enhanced update function with retry logic and request queuing
+  const updatePaymentIntentAmount = useCallback(async (paymentMethod, retryCount = 0) => {
     if (!clientSecret) return;
+    
+    // Skip if same payment method and no retry
+    if (lastPaymentMethodRef.current === paymentMethod && retryCount === 0) {
+      console.log('Skipping duplicate update for same payment method:', paymentMethod);
+      return;
+    }
+    
+    // If an update is in progress, queue this request
+    if (updateInProgressRef.current) {
+      console.log('Update in progress, queueing request for:', paymentMethod);
+      updateQueueRef.current = paymentMethod;
+      return;
+    }
+
+    updateInProgressRef.current = true;
+    lastPaymentMethodRef.current = paymentMethod;
     const paymentIntentId = clientSecret.split('_secret_')[0];
-    setLoading(true);
 
     try {
       const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/update-payment-intent-amount`, {
@@ -49,35 +72,81 @@ const CheckoutForm = ({ subtotal, surchargeRates, clientSecret }) => {
         })
       });
 
-      // Defensive: Only parse JSON if response is JSON
       const contentType = response.headers.get('content-type');
       if (contentType && contentType.includes('application/json')) {
-        await response.json();
-        console.log('Payment intent amount updated for method:', paymentMethod);
+        const data = await response.json();
+        console.log('Payment intent updated successfully for method:', paymentMethod);
+        retryCountRef.current = 0; // Reset retry count on success
       } else {
         const text = await response.text();
         console.error('Non-JSON response:', text);
       }
     } catch (error) {
-      if (error.message && error.message.includes('processing')) {
-        console.warn('PaymentIntent update failed - payment is processing. This is normal.');
-      } else {
-        console.error('Error updating payment intent:', error);
+      console.error('Error updating payment intent:', error);
+      
+      // Implement retry logic for lock_timeout errors
+      if (error.message && (error.message.includes('lock_timeout') || error.message.includes('429'))) {
+        if (retryCount < MAX_RETRIES) {
+          const backoffTime = Math.min(1000 * Math.pow(2, retryCount), 5000); // Exponential backoff with max 5s
+          console.log(`Retrying update after ${backoffTime}ms (attempt ${retryCount + 1}/${MAX_RETRIES})`);
+          
+          setTimeout(() => {
+            updatePaymentIntentAmount(paymentMethod, retryCount + 1);
+          }, backoffTime);
+          
+          updateInProgressRef.current = false;
+          return;
+        } else {
+          console.error('Max retries reached for payment intent update');
+        }
       }
     } finally {
-      setLoading(false);
+      updateInProgressRef.current = false;
+      
+      // Process queued request if any
+      if (updateQueueRef.current) {
+        const queuedMethod = updateQueueRef.current;
+        updateQueueRef.current = null;
+        console.log('Processing queued update for:', queuedMethod);
+        setTimeout(() => {
+          updatePaymentIntentAmount(queuedMethod);
+        }, 500); // Small delay before processing queued request
+      }
     }
   }, [clientSecret]);
 
+  // Debounced update function
+  const debouncedUpdatePaymentIntent = useCallback((paymentMethod) => {
+    // Clear any existing timer
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    
+    // Set new timer
+    debounceTimerRef.current = setTimeout(() => {
+      updatePaymentIntentAmount(paymentMethod);
+    }, 800); // Increased debounce delay to 800ms
+  }, [updatePaymentIntentAmount]);
+
   useEffect(() => {
     if (!elements) return;
+
     const paymentElement = elements.getElement(PaymentElement);
     if (!paymentElement) return;
 
+    let isInitialized = false;
+
     const handleChange = (event) => {
+      // Skip the very first change event during initialization
+      if (!isInitialized) {
+        isInitialized = true;
+        return;
+      }
+
       if (event.value && event.value.type) {
         let surchargeRate = surchargeRates.card || 1.5;
         let paymentMethodType = 'card';
+
         if (event.value.type === 'au_becs_debit') {
           surchargeRate = surchargeRates.au_becs_debit || 0.5;
           paymentMethodType = 'au_becs_debit';
@@ -85,13 +154,14 @@ const CheckoutForm = ({ subtotal, surchargeRates, clientSecret }) => {
           surchargeRate = surchargeRates.card || 1.5;
           paymentMethodType = 'card';
         }
+
         const surcharge = subtotal * (surchargeRate / 100);
         setCurrentSurcharge(surcharge);
         setTotalWithSurcharge(subtotal + surcharge);
         updatePaymentDisplay(surcharge, subtotal + surcharge, surchargeRate);
-        setTimeout(() => {
-          updatePaymentIntentAmount(paymentMethodType);
-        }, 100);
+        
+        // Use debounced update
+        debouncedUpdatePaymentIntent(paymentMethodType);
       }
     };
 
@@ -102,14 +172,22 @@ const CheckoutForm = ({ subtotal, surchargeRates, clientSecret }) => {
     setCurrentSurcharge(initialSurcharge);
     setTotalWithSurcharge(subtotal + initialSurcharge);
     updatePaymentDisplay(initialSurcharge, subtotal + initialSurcharge, surchargeRates.card || 1.5);
+    
+    // Delay initial update to avoid conflicts
     setTimeout(() => {
-      updatePaymentIntentAmount('card');
-    }, 500);
+      if (!updateInProgressRef.current && !lastPaymentMethodRef.current) {
+        updatePaymentIntentAmount('card');
+      }
+    }, 1500); // Increased initial delay
 
+    // Cleanup
     return () => {
       paymentElement.off('change', handleChange);
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
     };
-  }, [elements, subtotal, surchargeRates, updatePaymentDisplay, updatePaymentIntentAmount]);
+  }, [elements, subtotal, surchargeRates, updatePaymentDisplay, updatePaymentIntentAmount, debouncedUpdatePaymentIntent]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -117,14 +195,29 @@ const CheckoutForm = ({ subtotal, surchargeRates, clientSecret }) => {
     setError(null);
     setStatusMessage('');
     setStatusType('');
+
     const checkoutBtn = document.querySelector('.checkout-btn-dynamic');
     if (checkoutBtn) {
       checkoutBtn.textContent = 'Processing...';
     }
+
     if (!stripe || !elements) {
       setLoading(false);
       return;
     }
+
+    // Clear any pending updates before submitting
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // Wait for any in-progress updates to complete
+    let waitAttempts = 0;
+    while (updateInProgressRef.current && waitAttempts < 10) {
+      await new Promise(resolve => setTimeout(resolve, 200));
+      waitAttempts++;
+    }
+
     try {
       const { error, paymentIntent } = await stripe.confirmPayment({
         elements,
@@ -250,7 +343,7 @@ const CheckoutForm = ({ subtotal, surchargeRates, clientSecret }) => {
         disabled={loading || !stripe || !elements}
         className="checkout-btn checkout-btn-dynamic"
       >
-        {loading ? 'Processing...' : `Pay A${totalWithSurcharge.toFixed(2)}`}
+        {loading ? 'Processing...' : `Pay A$${totalWithSurcharge.toFixed(2)}`}
       </button>
       {error && (
         <div className="payment-status-message error">{error}</div>

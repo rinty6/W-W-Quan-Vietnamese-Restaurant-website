@@ -49,7 +49,9 @@ const PaymentPage = () => {
     if (!invoice || !customerEmail) return;
     fetch(`${process.env.REACT_APP_BACKEND_URL}/create-payment-intent`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json',
+        'x-api-key': process.env.REACT_APP_API_KEY
+       },
       body: JSON.stringify({
         order: {
           name: invoice.name,
