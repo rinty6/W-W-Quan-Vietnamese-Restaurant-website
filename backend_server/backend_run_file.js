@@ -32,7 +32,7 @@ function calculateTotalWithSurcharge(baseAmountCents, paymentMethod) {
 // Middlewares
 app.use(cors({
   origin: [
-    'https://w-w-quan-vietnamese-restaurant-website.vercel.app',
+    'https://wwwvietnamese-restaurant-website.vercel.app',
     'http://localhost:3000'
   ],
   credentials: true
