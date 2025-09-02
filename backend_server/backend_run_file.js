@@ -37,6 +37,10 @@ app.use(cors({
   ],
   credentials: true
 }));
+
+// Mount webhook routes
+app.use('/webhook', webhookRoutes);
+
 app.use(express.json());
 
 // Log all requests (helpful for debugging)
@@ -97,26 +101,35 @@ app.post("/create-payment-intent", async (req, res) => {
   }
 
   try {
-    const paymentIntent = await stripe.paymentIntents.create({
+    // Simplify items data to reduce metadata size
+    const simplifiedItems = items.map(item => ({
+      id: item.id,
+      name: item.name.substring(0, 50), // Limit name length
+      dishPrice: item.dishPrice,
+      quantity: item.quantity || 1,
+      sides: (item.sides || []).map(side => ({
+        name: side.name.substring(0, 30), // Limit side name length
+        price: side.price
+      }))
+    }));
+
+  const paymentIntent = await stripe.paymentIntents.create({
       amount: maxTotalAmountCents,
       currency: 'aud',
       automatic_payment_methods: { enabled: true },
-      receipt_email: order.email,
+      receipt_email: order.email, 
       metadata: {
         name: order.name || 'Unknown',
         phone: order.phone || 'Unknown',
-        email: order.email || 'Unknown',
-        summary: `Items: ${items.length}`,
-        base_amount_cents: baseAmountCents.toString(),
-        base_amount_dollars: baseAmount.toFixed(2),
-        total_with_card_surcharge: calculateTotalWithSurcharge(baseAmountCents, 'card').toString(),
-        total_with_becs_surcharge: calculateTotalWithSurcharge(baseAmountCents, 'au_becs_debit').toString(),
-        card_surcharge_cents: calculateSurcharge(baseAmountCents, 'card').toString(),
-        becs_surcharge_cents: calculateSurcharge(baseAmountCents, 'au_becs_debit').toString(),
+        email: order.email || '', // Store full email in metadata
         pickup_type: order.pickup_type || order.pickupType || 'pickup',
         datetime: order.datetime || 'Not specified',
-        note: order.note || 'No note',
-        items_data: JSON.stringify(items)
+        note: (order.note || 'No note').substring(0, 100), // Limit note length
+        base_amount_cents: baseAmountCents.toString(),
+        base_amount_dollars: baseAmount.toFixed(2),
+        card_surcharge_cents: calculateSurcharge(baseAmountCents, 'card').toString(),
+        becs_surcharge_cents: calculateSurcharge(baseAmountCents, 'au_becs_debit').toString(),
+        items_data: JSON.stringify(simplifiedItems) // Use simplified items
       }
     });
 
@@ -185,9 +198,6 @@ app.post("/api/update-payment-intent-amount", async (req, res) => {
 app.get("/surcharge-rates", (req, res) => {
   res.json(SURCHARGE_RATES);
 });
-
-// Mount webhook routes
-app.use('/webhook', webhookRoutes);
 
 // Server start
 const PORT = process.env.PORT || 5000;

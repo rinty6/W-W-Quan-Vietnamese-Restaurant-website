@@ -30,7 +30,7 @@ async function createOrder(order, items) {
          VALUES (?, ?, ?, ?, ?)`,
         [
           orderId,
-          item.id ?? null, // Use 'id' from frontend, fallback to null
+          item.id ?? null,
           item.name ?? null,
           item.dishPrice ?? null,
           item.quantity ?? 1
