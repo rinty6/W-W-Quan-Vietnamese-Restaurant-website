@@ -1,70 +1,24 @@
-# Getting Started with Create React App
+# W&W QUAN Website Project
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Introduction
+Greetings! I'm Leo, and I'm thrilled to present my first personal project in Australia: a website for W&W QUAN, an authentic Vietnamese restaurant located in South Australia. This project is currently in the testing phase, during which I am integrating Stripe to facilitate secure online payments for orders. Please note that any purchases made on the website at this stage are for testing purposes only, and I apologize for any inconvenience this may cause. If you encounter any issues or errors while exploring the site, I would greatly appreciate your feedback in the comments. Thank you for taking the time to review this project!
 
-## Available Scripts
+## Frameworks
+The project utilizes the following frameworks:
+- React: For building the dynamic and responsive frontend.
+- Node.js: For powering the backend server and handling API requests.
 
-In the project directory, you can run:
+## Deployment
+The website has been deployed as follows:
+- Frontend: Hosted on Vercel. You can access the live site here: https://wwwvietnamese-restaurant-website.vercel.app/.
+- Backend: Deployed using Render, which manages the Stripe server, webhook, and database operations.
+- Database: Hosted on PlanetScale, storing critical payment details such as customer names, phone numbers, dish details, and more.
 
-### `npm start`
+## Data Flow
+The website's payment and data flow process operates as follows:
+- When a customer completes a successful payment on the website, the Stripe webhook verifies the payment status.
+- Upon confirmation, the payment metadata is sent to the PlanetScale database for storage.
+- The system then sends an email confirmation to the customer using the provided email address.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
-
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## Feedback
+I welcome any suggestions or bug reports to help improve this project. Please feel free to leave your feedback in the comments or create an issue in this repository. Thank you for your support!
